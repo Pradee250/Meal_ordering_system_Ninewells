@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - Meal Orders System</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        .dashboard {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #eee;
+        }
+        .nav-menu {
+            background: #f8f9fa;
+            padding: 10px;
+            border-radius: 4px;
+            margin-bottom: 20px;
+        }
+        table {
+            width: 100%;
+            margin-bottom: 20px;
+            border-collapse: collapse;
+        }
+        table, th, td {
+            border: 1px solid #ddd;
+        }
+        th, td {
+            padding: 12px;
+            text-align: left;
+        }
+        th {
+            background-color: #f8f9fa;
+        }
+        button {
+            padding: 10px 15px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        .hidden {
+            display: none;
+        }
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.4);
+        }
+        .modal-content {
+            background-color: #fefefe;
+            margin: 15% auto;
+            padding: 20px;
+            border: 1px solid #888;
+            width: 80%;
+            max-width: 500px;
+            border-radius: 8px;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        .form-group input {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+        .button-group {
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+            margin-top: 20px;
+        }
+        .cancel-btn {
+            background-color: #dc3545;
+        }
+        .cancel-btn:hover {
+            background-color: #c82333;
+        }
+        .date-selector {
+            margin-bottom: 20px;
+        }
+        .date-selector input {
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="dashboard">
+            <div class="header">
+                <h1>Meal Orders Dashboard</h1>
+                <div>
+                    <span id="userInfo">Welcome, User</span>
+                </div>
+            </div>
+
+            <div class="date-selector">
+                <label for="dateSelect">Select Date: </label>
+                <input type="date" id="dateSelect" required>
+                <p id="selectedDateDisplay"></p>
+            </div>
+
+            <!-- Orders Section -->
+            <div id="ordersSection">
+                <!-- Breakfast Section -->
+                <div id="breakfastSection">
+                    <h2>Breakfast</h2>
+                    <button onclick="openModal('breakfast')">Add Breakfast Order</button>
+                    <table id="breakfastTable">
+                        <thead>
+                            <tr>
+                                <th>Name</th>
+                                <th>EPF No.</th>
+                                <th>Department</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+                    <p>Total Orders: <span id="breakfastCount">0</span></p>
+                </div>
+
+                <!-- Lunch Section -->
+                <div id="lunchSection">
+                    <h2>Lunch</h2>
+                    <button onclick="openModal('lunch')">Add Lunch Order</button>
+                    <table id="lunchTable">
+                        <thead>
+                            <tr>
+                                <th>Name</th>
+                                <th>EPF No.</th>
+                                <th>Department</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+                    <p>Total Orders: <span id="lunchCount">0</span></p>
+                </div>
+
+                <!-- Dinner Section -->
+                <div id="dinnerSection">
+                    <h2>Dinner</h2>
+                    <button onclick="openModal('dinner')">Add Dinner Order</button>
+                    <table id="dinnerTable">
+                        <thead>
+                            <tr>
+                                <th>Name</th>
+                                <th>EPF No.</th>
+                                <th>Department</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+                    <p>Total Orders: <span id="dinnerCount">0</span></p>
+                </div>
+            </div>
+            <p>Total Orders Across All Meals: <span id="totalCount">0</span></p>
+        </div>
+    </div>
+
+    <!-- Add Order Modal -->
+    <div id="orderModal" class="modal">
+        <div class="modal-content">
+            <h2>Add New Order</h2>
+            <form id="orderForm">
+                <div class="form-group">
+                    <label for="staffName">Staff Name:</label>
+                    <input type="text" id="staffName" required>
+                </div>
+                <div class="form-group">
+                    <label for="epfNo">EPF Number:</label>
+                    <input type="text" id="epfNo" required>
+                </div>
+                <div class="form-group">
+                    <label for="department">Department:</label>
+                    <input type="text" id="department" required>
+                </div>
+                <div class="button-group">
+                    <button type="button" class="cancel-btn" onclick="closeModal()">Cancel</button>
+                    <button type="submit">Save Order</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // Initialize data structure
+        let currentMealType = '';
+        let mealOrders = JSON.parse(localStorage.getItem('mealOrders')) || {
+            breakfast: [],
+            lunch: [],
+            dinner: []
+        };
+
+        // Set today's date as default
+        window.onload = function() {
+            const today = new Date().toISOString().split('T')[0];
+            document.getElementById('dateSelect').value = today;
+            displayOrders();
+        };
+
+        function openModal(mealType) {
+            const dateSelect = document.getElementById('dateSelect');
+            if (!dateSelect.value) {
+                alert('Please select a date first');
+                return;
+            }
+            currentMealType = mealType;
+            document.getElementById('orderModal').style.display = 'block';
+            document.getElementById('orderForm').reset();
+        }
+
+        function closeModal() {
+            document.getElementById('orderModal').style.display = 'none';
+        }
+
+        // Close modal when clicking outside
+        window.onclick = function(event) {
+            if (event.target == document.getElementById('orderModal')) {
+                closeModal();
+            }
+        }
+
+        function saveMealOrders() {
+            localStorage.setItem('mealOrders', JSON.stringify(mealOrders));
+        }
+
+        function deleteOrder(mealType, index) {
+            const selectedDate = document.getElementById('dateSelect').value;
+            mealOrders[mealType] = mealOrders[mealType].filter((order, idx) => 
+                !(idx === index && order.date === selectedDate)
+            );
+            saveMealOrders();
+            displayOrders();
+        }
+
+        function displayOrders() {
+            const selectedDate = document.getElementById('dateSelect').value;
+            if (!selectedDate) return;
+
+            document.getElementById('selectedDateDisplay').textContent = 
+                `Selected Date: ${selectedDate}`;
+            
+            ['breakfast', 'lunch', 'dinner'].forEach(mealType => {
+                const tbody = document.getElementById(`${mealType}Table`).querySelector('tbody');
+                const orders = mealOrders[mealType].filter(order => order.date === selectedDate);
+                
+                tbody.innerHTML = '';
+                orders.forEach((order, index) => {
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td>${order.name}</td>
+                        <td>${order.epfNo}</td>
+                        <td>${order.department}</td>
+                        <td>
+                            <button onclick="deleteOrder('${mealType}', ${index})">Delete</button>
+                        </td>
+                    `;
+                    tbody.appendChild(row);
+                });
+                
+                document.getElementById(`${mealType}Count`).textContent = orders.length;
+            });
+
+            updateTotalCount();
+        }
+
+        function updateTotalCount() {
+            const selectedDate = document.getElementById('dateSelect').value;
+            const total = ['breakfast', 'lunch', 'dinner'].reduce((sum, mealType) => 
+                sum + mealOrders[mealType].filter(order => order.date === selectedDate).length, 0
+            );
+            document.getElementById('totalCount').textContent = total;
+        }
+
+        // Form submission handler
+        document.getElementById('orderForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const name = document.getElementById('staffName').value;
+            const epfNo = document.getElementById('epfNo').value;
+            const department = document.getElementById('department').value;
+            const selectedDate = document.getElementById('dateSelect').value;
+
+            if (name && epfNo && department && selectedDate) {
+                mealOrders[currentMealType].push({
+                    name,
+                    epfNo,
+                    department,
+                    date: selectedDate
+                });
+                saveMealOrders();
+                displayOrders();
+                closeModal();
+                alert('Order saved successfully!');
+            } else {
+                alert('Please fill in all fields and select a date.');
+            }
+        });
+
+        // Date change handler
+        document.getElementById('dateSelect').addEventListener('change', displayOrders);
+    </script>
+</body>
+</html>
